@@ -1,2 +1,5 @@
 # Jetbrains IDEA
 .idea
+
+# .env
+.env
