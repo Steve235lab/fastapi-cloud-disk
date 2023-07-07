@@ -1,4 +1,5 @@
 import os
+from uuid import UUID
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -23,3 +24,9 @@ class BaseModel(declarative_base()):
         with Session() as session:
             session.add(self)
             session.commit()
+
+    @classmethod
+    def get_by_id(cls, _id: int | UUID):
+        """Get record with int ID or UUID"""
+        with Session() as session:
+            return session.query(cls).get(cls.id == _id)
