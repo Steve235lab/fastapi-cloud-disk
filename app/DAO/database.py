@@ -26,7 +26,7 @@ class BaseModel(declarative_base()):
             session.commit()
 
     @classmethod
-    def get_by_id(cls, _id: int | UUID):
+    def get_by_id(cls, _id: int | UUID | str):
         """Get record with int ID or UUID"""
         with Session() as session:
             return session.query(cls).get(cls.id == _id)

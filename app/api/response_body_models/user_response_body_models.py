@@ -7,3 +7,7 @@ class RespLogin(BaseModel):
 
 class RespSignUp(RespLogin):
     pass
+
+
+class RespLogout(RespLogin):
+    pass
