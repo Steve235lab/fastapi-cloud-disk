@@ -11,3 +11,7 @@ class RespSignUp(RespLogin):
 
 class RespLogout(RespLogin):
     pass
+
+
+class RespAdjustStorageSize(RespLogin):
+    storage_size: int

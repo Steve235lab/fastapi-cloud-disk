@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from uuid import UUID
 
@@ -26,7 +28,7 @@ class BaseModel(declarative_base()):
             session.commit()
 
     @classmethod
-    def get_by_id(cls, _id: int | UUID | str):
+    def get_by_id(cls, _id: int | UUID | str) -> BaseModel | None:
         """Get record with int ID or UUID"""
         with Session() as session:
             return session.query(cls).get(cls.id == _id)

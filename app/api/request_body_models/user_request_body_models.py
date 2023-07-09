@@ -9,3 +9,7 @@ class ReqLogin(BaseModel):
 class ReqSignUp(ReqLogin):
     email: str
     invitation_code: str | None = None
+
+
+class ReqAdjustStorageSize(BaseModel):
+    invitation_code: str

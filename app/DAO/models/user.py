@@ -12,12 +12,12 @@ from app.DAO.database import BaseModel, Session
 class User(BaseModel):
     __tablename__ = "user"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String)
-    email = Column(String)
-    hashed_password = Column(String)
-    storage_size = Column(Integer, default=1024)  # Unit: MB
-    last_seen = Column(Float, default=0.0)  # Timestamp of last login
-    login_counter = Column(Integer, default=0)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    storage_size = Column(Integer, default=1024, nullable=False)  # Unit: MB
+    last_seen = Column(Float, default=0.0, nullable=False)  # Timestamp of last login
+    login_counter = Column(Integer, default=0, nullable=False)
 
     def touch(self, name: str | None = None, email: str | None = None):
         with Session() as session:
