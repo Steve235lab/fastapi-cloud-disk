@@ -27,6 +27,11 @@ class BaseModel(declarative_base()):
             session.add(self)
             session.commit()
 
+    def delete_from_db(self):
+        with Session() as session:
+            session.delete(self)
+            session.commit()
+
     @classmethod
     def get_by_id(cls, _id: int | UUID | str) -> BaseModel | None:
         """Get record with int ID or UUID"""

@@ -1,3 +1,4 @@
+import os
 import time
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -10,6 +11,7 @@ from app.DAO.database import Session
 from app.DAO.models.user import User
 from app.DAO.models.invitation_code import InvitationCode
 from app.service.auth import unpack_invitation_code, Authentication
+from app.service.utils import UtilService
 
 router = APIRouter()
 
@@ -41,6 +43,8 @@ def sign_up(request: ReqSignUp):
         storage_size=unpack_invitation_code(request.invitation_code) if request.invitation_code else 1024
     )
     new_user.add_to_db()
+    # Create storage folder for the new user
+    os.mkdir(UtilService.get_storage_path() + str(new_user.id))
     return {"status": "ok"}
 
 
@@ -50,6 +54,7 @@ def logout(response: Response):
     return {"status": "ok"}
 
 
+@Authentication.refresh_token_in_cookie
 @router.post("/adjustStorageSize", response_model=RespAdjustStorageSize)
 def adjust_storage_size(request: ReqAdjustStorageSize,
                         user_id_token_tuple: tuple[str, str] = Depends(Authentication.get_authed_user_id_and_token)):
