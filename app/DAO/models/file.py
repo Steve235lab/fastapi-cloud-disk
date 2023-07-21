@@ -9,4 +9,4 @@ class File(BaseModel):
     id = Column(Integer, primary_key=True)
     user_id = Column(UUID, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     filename = Column(String, nullable=False)
-
+    download_cnt = Column(Integer, nullable=False, default=0)

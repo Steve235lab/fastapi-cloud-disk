@@ -4,7 +4,7 @@ from functools import wraps
 import asyncio
 
 from jose import jwt
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Cookie
 
 
 def pack_invitation_code(storage_size: int) -> str:
@@ -42,7 +42,7 @@ class Authentication:
         return old_token  # no need to refresh
 
     @staticmethod
-    def get_authed_user_id_and_token(token: str) -> tuple[str, str]:
+    def get_authed_user_id_and_token(token: str | None = Cookie(default=None)) -> tuple[str, str]:
         unauthorized_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",

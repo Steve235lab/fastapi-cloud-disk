@@ -32,4 +32,4 @@ class User(BaseModel):
     @classmethod
     def get_by_name(cls, name: str) -> User | None:
         with Session() as session:
-            return session.query(cls).filter_by(cls.name == name).one_or_none()
+            return session.query(cls).filter(cls.name == name).one_or_none()
