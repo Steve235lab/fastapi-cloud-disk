@@ -91,6 +91,9 @@ def download_own_file(
             file_bytes = file_on_disk.read()
         except:
             raise HTTPException(status_code=500, detail=f"Failed to read file {filename}")
+        with Session() as session:
+            file.download_cnt += 1
+            session.commit()
         headers = {"Content-Disposition": f'attachment; filename="{file.filename}"'}
         return Response(file_bytes, headers=headers)
 
@@ -139,5 +142,8 @@ def download_shared_file(shared_file_id: str):
         file_bytes = file_on_disk.read()
     except:
         raise HTTPException(status_code=500, detail=f"Failed to read file {shared_file_id}")
+    with Session() as session:
+        file_to_download.download_cnt += 1
+        session.commit()
     headers = {"Content-Disposition": f'attachment; filename="{file_to_download.filename}"'}
     return Response(file_bytes, headers=headers)
