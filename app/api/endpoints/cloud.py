@@ -8,6 +8,8 @@ from app.service.auth import Authentication
 from app.service.utils import UtilService
 from app.DAO.models.file import File
 from app.DAO.database import Session
+from app.service.storage import get_folder_size
+from app.DAO.models.user import User
 
 router = APIRouter()
 
@@ -40,15 +42,21 @@ def upload(response: Response, file: UploadFile = FastAPIFile(), file_name_to_re
     file_for_db = File(user_id=user_id_token_tuple[0], filename=filename)
     file_for_db.add_to_db()
     file_path = UtilService.get_storage_path() + user_id_token_tuple[0]
-    if not os.path.exists(file_path):  # Create user storage folder if it doesn't exist
+    # Create user storage folder if it doesn't exist
+    if not os.path.exists(file_path):
         os.mkdir(file_path)
+    # Check if there's enough space for this upload
+    used_space = get_folder_size(file_path)
+    user = User.get_by_id(user_id_token_tuple[0])
+    if user.storage_size - used_space < file.size:
+        raise HTTPException(status_code=400, detail=f"No enough space to upload the file {file.filename}!")
     # Write file
     try:
         with open(file_path + f"/{filename}", "wb") as file_to_disk:
             file_to_disk.write(await file.read())
     except:
         file_for_db.delete_from_db()
-        raise HTTPException(status_code=400, detail="Write file failed!")
+        raise HTTPException(status_code=500, detail="Write file failed!")
     return {"fileID": file_for_db.id}
 
 
