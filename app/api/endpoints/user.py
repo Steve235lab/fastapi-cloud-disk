@@ -4,12 +4,16 @@ import time
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import Response
 
-from app.api.response_body_models.user_response_body_models import RespLogin, RespSignUp, RespLogout, \
-    RespAdjustStorageSize
-from app.api.request_body_models.user_request_body_models import ReqLogin, ReqSignUp, ReqAdjustStorageSize
 from app.DAO.database import Session
-from app.DAO.models.user import User
 from app.DAO.models.invitation_code import InvitationCode
+from app.DAO.models.user import User
+from app.api.request_body_models.user_request_body_models import ReqLogin, ReqSignUp, ReqAdjustStorageSize
+from app.api.response_body_models.user_response_body_models import (
+    RespLogin,
+    RespSignUp,
+    RespLogout,
+    RespAdjustStorageSize,
+)
 from app.service.auth import unpack_invitation_code, Authentication
 from app.service.utils import UtilService
 
@@ -25,7 +29,7 @@ def login(request: ReqLogin, response: Response):
             response.set_cookie(
                 "token",
                 Authentication.create_access_token(user_id=str(user_in_db.id)),
-                Authentication.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+                Authentication.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             )
             return {"status": "ok"}
         else:
@@ -40,7 +44,7 @@ def sign_up(request: ReqSignUp):
         name=request.username,
         email=request.email,
         hashed_password=request.hashed_password,
-        storage_size=unpack_invitation_code(request.invitation_code) if request.invitation_code else 1024
+        storage_size=unpack_invitation_code(request.invitation_code) if request.invitation_code else 1024,
     )
     new_user.add_to_db()
     # Create storage folder for the new user
@@ -56,8 +60,10 @@ def logout(response: Response):
 
 @Authentication.refresh_token_in_cookie
 @router.post("/adjustStorageSize", response_model=RespAdjustStorageSize)
-def adjust_storage_size(request: ReqAdjustStorageSize,
-                        user_id_token_tuple: tuple[str, str] = Depends(Authentication.get_authed_user_id_and_token)):
+def adjust_storage_size(
+    request: ReqAdjustStorageSize,
+    user_id_token_tuple: tuple[str, str] = Depends(Authentication.get_authed_user_id_and_token),
+):
     # Validate the invitation code
     invitation_code = InvitationCode.get_by_id(request.invitation_code)
     if invitation_code and invitation_code.expired_at is None:
@@ -72,6 +78,7 @@ def adjust_storage_size(request: ReqAdjustStorageSize,
         else:
             return {
                 "status": "The invitation you entered can't enlarge your storage size because it has a smaller or equal size with the current size.",
-                "storage_size": user.storage_size}
+                "storage_size": user.storage_size,
+            }
     else:
         raise HTTPException(status_code=400, detail="Invalid invitation code!")

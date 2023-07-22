@@ -1,10 +1,10 @@
+import asyncio
 import os
 from datetime import timedelta, datetime
 from functools import wraps
-import asyncio
 
-from jose import jwt
 from fastapi import HTTPException, status, Cookie
+from jose import jwt
 
 
 def pack_invitation_code(storage_size: int) -> str:

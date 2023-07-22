@@ -1,7 +1,7 @@
 import os
 
 
-def get_folder_size(path: str = '.'):
+def get_folder_size(path: str = "."):
     """Return the size of a given folder, unit MB"""
     total = 0
     for root, dirs, files in os.walk(path):

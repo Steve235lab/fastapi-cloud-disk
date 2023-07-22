@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import uuid
 import time
+import uuid
 
 from sqlalchemy import Column, String, Integer, Float
 from sqlalchemy.dialects.postgresql import UUID

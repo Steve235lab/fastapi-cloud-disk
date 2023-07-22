@@ -7,3 +7,7 @@ class RespUpload(BaseModel):
 
 class RespExists(BaseModel):
     exists: bool
+
+
+class RespShare(BaseModel):
+    shareLink: str
