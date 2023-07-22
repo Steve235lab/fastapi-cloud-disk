@@ -5,6 +5,7 @@ from fastapi.responses import Response
 
 from app.DAO.database import Session
 from app.DAO.models.file import File
+from app.DAO.models.shared_file import SharedFile
 from app.DAO.models.user import User
 from app.api.response_body_models.cloud_response_body_models import RespUpload, RespExists, RespShare
 from app.service.auth import Authentication
@@ -33,7 +34,7 @@ def exists(
 
 @Authentication.refresh_token_in_cookie
 @router.post("/upload", response_model=RespUpload)
-def upload(
+async def upload(
     response: Response,
     file: UploadFile = FastAPIFile(),
     file_name_to_replace: str = Form(default=""),
@@ -89,7 +90,7 @@ def download_own_file(
             file_on_disk = open(file_path, "rb")
             file_bytes = file_on_disk.read()
         except:
-            raise HTTPException(status_code=400, detail=f"Failed to read file {filename}")
+            raise HTTPException(status_code=500, detail=f"Failed to read file {filename}")
         headers = {"Content-Disposition": f'attachment; filename="{file.filename}"'}
         return Response(file_bytes, headers=headers)
 
@@ -102,10 +103,41 @@ def share(
     user_id_token_tuple: tuple[str, str] = Depends(Authentication.get_authed_user_id_and_token),
 ):
     """Generate a link to share the file"""
-    pass
+    file_path = UtilService.get_storage_path() + user_id_token_tuple[0] + f"/{filename}"
+    with Session() as session:
+        file = (
+            session.query(File).filter(File.filename == filename, File.user_id == user_id_token_tuple[0]).one_or_none()
+        )
+        if file is None:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise HTTPException(status_code=404, detail=f"No file named {filename}")
+        # Check if the file has been shared before
+        shared_file = session.query(SharedFile).filter(SharedFile.file_id == file.id).one_or_none()
+        if shared_file is None:
+            shared_file = SharedFile(file_id=file.id)
+            session.add(shared_file)
+            session.commit()
+    link = os.getenv("SERVICE_URL") + "/download_shared/" + str(shared_file.id)
+    return {"shareLink": link}
 
 
-@router.post("/download_shared/{file_id_hash}", response_class=Response)
-def download_shared_file(file_id_hash: str):
+@router.post("/downloadShared/{shared_file_id}", response_class=Response)
+def download_shared_file(shared_file_id: str):
     """Download the file shared by others, no need to login"""
-    pass
+    shared_file = SharedFile.get_by_id(shared_file_id)
+    if shared_file is None:
+        raise HTTPException(status_code=404, detail="Not Found!")
+    file_to_download = File.get_by_id(shared_file.file_id)
+    # If the shared file is removed
+    if file_to_download is None:
+        shared_file.delete_from_db()
+        raise HTTPException(status_code=400, detail="The shared file has been deleted!")
+    file_path = UtilService.get_storage_path() + str(file_to_download.user_id) + f"/{file_to_download.filename}"
+    try:
+        file_on_disk = open(file_path, "rb")
+        file_bytes = file_on_disk.read()
+    except:
+        raise HTTPException(status_code=500, detail=f"Failed to read file {shared_file_id}")
+    headers = {"Content-Disposition": f'attachment; filename="{file_to_download.filename}"'}
+    return Response(file_bytes, headers=headers)
