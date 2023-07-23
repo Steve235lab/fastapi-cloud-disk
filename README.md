@@ -22,7 +22,7 @@ A backend server program based on FastAPI framework which will host a personal c
 
 4. Configure the service
 
-   We use ```.env``` file to configure the service and the environment variables will be loaded when the service starts. For safety concerns, please don't track the ```.env``` file with Git or share it with others. Here's a template of the ```.env```:
+   We use ```.env``` file to configure the service and the environment variables will be loaded when the service starts. For security concerns, please don't track the ```.env``` file with Git or share it with others. Here's a template of the ```.env```:
 
    ```.env
    # .env
